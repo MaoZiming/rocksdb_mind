@@ -105,7 +105,9 @@ class PosixDynamicLibrary : public DynamicLibrary {
  public:
   PosixDynamicLibrary(const std::string& name, void* handle)
       : name_(name), handle_(handle) {}
-  ~PosixDynamicLibrary() override { dlclose(handle_); }
+  ~PosixDynamicLibrary() override {
+    // dlclose(handle_);
+  }
 
   Status LoadSymbol(const std::string& sym_name, void** func) override {
     assert(nullptr != func);

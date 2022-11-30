@@ -13,7 +13,6 @@ ifneq ($(USE_RTTI), 1)
 endif
 
 CFLAGS += -Wstrict-prototypes
-CXXFLAGS += -DROCKSDB_NO_DYNAMIC_EXTENSION
 
 .PHONY: clean librocksdb
 
