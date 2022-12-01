@@ -162,6 +162,7 @@ DB* init_rocksdb(const string DBPath) {
     options.allow_concurrent_memtable_write = false;
     options.compression = rocksdb::CompressionType::kNoCompression;
     options.max_open_files = -1;
+    options.max_file_opening_threads = 1;
 
     /* debug log*/
     options.info_log_level = rocksdb::InfoLogLevel::INFO_LEVEL;
