@@ -392,13 +392,11 @@ struct hash_test_ycsb_ops *get_oplist_from_run_dat(char *run_file, int blade_id,
         std::printf("Cannot open file: %s\n", run_file);    
         exit(-1);
     }
-    printf("before\n");
+
     struct hash_test_ycsb_ops *oplist = (struct hash_test_ycsb_ops *)mmap(NULL, MAX_RUN_OP_NUM * sizeof(struct hash_test_ycsb_ops), PROT_READ | PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|TEST_ALLOC_FLAG, -1, 0);
     if(oplist == MAP_FAILED)
         printf("mmap failed!\n");
-    oplist[0].opcode = YCSB_UPDATE; /* Die */
-    printf("after\n");
-    exit(0);
+
     (*num_total_run_ops) = parse_run_ycsb(fp_ycsb_run, oplist, MAX_RUN_OP_NUM, blade_id, num_nodes, num_threads);
 
     std::fclose(fp_ycsb_run);
