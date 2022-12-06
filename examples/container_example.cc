@@ -46,6 +46,7 @@
 #define MIND_MAX_THREAD NUM_CORES_PER_BLADE
 #define MIND_MAX_BLADE 4
 #define MIND_NUM_MAX_THREAD (MIND_MAX_THREAD * MIND_MAX_BLADE)
+#define TEST_ALLOC_FLAG 0xfe
 
 /* profile */
 #define PRINT_ROCKSDB_PROFILE_POINTS
@@ -261,8 +262,7 @@ static uint64_t parse_load_ycsb(FILE *fp, uint64_t max_ops, int blade_id, int nu
     if (!fp) {
         return 0;
     }
-
-    char *line = (char *)malloc(MAX_LINE_SIZE);
+    char *line = (char *)mmap(NULL, MAX_LINE_SIZE * sizeof(char), PROT_READ | PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|TEST_ALLOC_FLAG, -1, 0);
     unsigned int num_workers = num_nodes * num_threads;
     size_t len = 0;
     ssize_t read = 0;
@@ -317,8 +317,7 @@ static uint64_t parse_run_ycsb(FILE *fp, struct hash_test_ycsb_ops *oplist, uint
     {
         return 0;
     }
-
-    char *line = (char *)malloc(MAX_LINE_SIZE);
+    char *line = (char *)mmap(NULL, MAX_LINE_SIZE * sizeof(char), PROT_READ | PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|TEST_ALLOC_FLAG, -1, 0);
     size_t len = 0;
     ssize_t read = 0;
     unsigned int num_workers = num_nodes * num_threads;
@@ -393,7 +392,13 @@ struct hash_test_ycsb_ops *get_oplist_from_run_dat(char *run_file, int blade_id,
         std::printf("Cannot open file: %s\n", run_file);    
         exit(-1);
     }
-    struct hash_test_ycsb_ops *oplist = (struct hash_test_ycsb_ops *)malloc(sizeof(struct hash_test_ycsb_ops) * MAX_RUN_OP_NUM);
+    printf("before\n");
+    struct hash_test_ycsb_ops *oplist = (struct hash_test_ycsb_ops *)mmap(NULL, MAX_RUN_OP_NUM * sizeof(struct hash_test_ycsb_ops), PROT_READ | PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|TEST_ALLOC_FLAG, -1, 0);
+    if(oplist == MAP_FAILED)
+        printf("mmap failed!\n");
+    oplist[0].opcode = YCSB_UPDATE; /* Die */
+    printf("after\n");
+    exit(0);
     (*num_total_run_ops) = parse_run_ycsb(fp_ycsb_run, oplist, MAX_RUN_OP_NUM, blade_id, num_nodes, num_threads);
 
     std::fclose(fp_ycsb_run);
@@ -418,7 +423,7 @@ static void *run_rocksdb_ycsb(void *args)
     double t_tot = 0;
     //pthread_barrier_t *barrier_begin, *barrier_end;
     atomic_int *barrier_begin, *barrier_mid, *barrier_end;
-    volatile char *val = (char *)malloc(MAX_VALUE_SIZE);
+    volatile char *val = (char *)mmap(NULL, MAX_VALUE_SIZE * sizeof(char), PROT_READ | PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS|TEST_ALLOC_FLAG, -1, 0);
     memset((void *)val, MAX_VALUE_SIZE, 0);
 
     t_args = (struct hash_test_args *)args;
